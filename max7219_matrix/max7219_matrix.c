@@ -2,6 +2,7 @@
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
+#include <unistd.h>
 
 // SPI configuration
 #define SPI_CHANNEL 0
@@ -21,7 +22,7 @@ typedef struct
     uint8_t col;
 } Point;
 
-// Direction and level lookup table
+// Direction and tilt level lookup table
 static Point dir_level[4][4] =
 {
     /* Level 0 */
@@ -77,17 +78,22 @@ void max7219matrix_clear(void)
     }
 }
 
-void max7219matrix_Init(void)
+int max7219matrix_Init(void)
 {
-    wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
+    int result;
+    result = wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
+    if (result < 0)
+        return -1;
+
     max7219matrix_send(REG_DISPLAY_TEST, 0x00); // Disable display test mode
     max7219matrix_send(REG_DECODE_MODE, 0x00);  // Disable decode mode (for 8x8 LED matrix)
     max7219matrix_send(REG_INTENSITY, 0x03);    // Set LED brightness
     max7219matrix_send(REG_SCAN_LIMIT, 0x07);   // Scan all 8 rows (digits 0-7)
     max7219matrix_send(REG_SHUTDOWN, 0x01);     // Set to normal operation mode
-    
+
     /* Clear display */
     max7219matrix_clear();
+    return 1;
 }
 
 void max7219matrix_Display(uint8_t direction, uint8_t level)
@@ -127,4 +133,15 @@ void max7219matrix_Display(uint8_t direction, uint8_t level)
     /* Create 2x2 block */
     max7219matrix_send(row, col_data);
     max7219matrix_send(row + 1, col_data);
+}
+
+void max7219matrix_test(void)
+{
+    // Light up entire 8x8 matrix
+    for (uint8_t row = 1; row <= 8; row++)
+    {
+        max7219matrix_send(row, 0xFF);
+    }
+    sleep(1);
+    max7219matrix_clear(); // Turn off all LEDs
 }

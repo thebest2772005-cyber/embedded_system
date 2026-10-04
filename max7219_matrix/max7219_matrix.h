@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-void max7219matrix_Init(void);
+int max7219matrix_Init(void);
 void max7219matrix_clear(void);
 /*
  * direction:
@@ -20,5 +20,5 @@ void max7219matrix_clear(void);
  * 3 = Severe tilt
  */
 void max7219matrix_Display(uint8_t direction, uint8_t level);
-
+void max7219matrix_test(void);
 #endif
