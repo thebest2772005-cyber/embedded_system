@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+void max7219matrix_send(uint8_t address, uint8_t data);
 int max7219matrix_Init(void);
 void max7219matrix_clear(void);
 /*

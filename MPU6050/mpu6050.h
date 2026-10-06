@@ -28,7 +28,6 @@
 #define GZ_H 0x47
 #define GZ_L 0x48
 
-
 #define RAD_TO_DEG (180.0f / 3.14159265f)
 
 extern int fd;
@@ -63,8 +62,8 @@ typedef struct
 } MPU6050_Data;
 
 /* khởi tạo */
-int MPU6050_Init(void);
-
+int MPU6050_Init(int gyro_range, int accel_range, uint8_t sample_divider);
+void MPU6050_SetDLPF(uint8_t config);
 /* Thanh ghi */
 int MPU6050_ReadRegs(int fd, uint8_t reg, uint8_t *buffer, int length);
 

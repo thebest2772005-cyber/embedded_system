@@ -1,28 +1,28 @@
-#include "max7219_matrix.h"
+#include "max7219matrix.h"
 
 #include <wiringPi.h>
 #include <wiringPiSPI.h>
-#include <unistd.h>
 
-// SPI configuration
+//SPI
 #define SPI_CHANNEL 0
 #define SPI_SPEED   1000000
 
-// MAX7219 register addresses
-#define REG_DECODE_MODE   0x09 // Decode mode: BCD code B for 7-segment, or no decode
-#define REG_INTENSITY     0x0A // Display intensity / brightness
-#define REG_SCAN_LIMIT    0x0B // Scan limit: number of digits/rows to scan
-#define REG_SHUTDOWN      0x0C // Shutdown mode: shutdown / normal operation
-#define REG_DISPLAY_TEST  0x0F // Display-test register
+//max7219matrix REGISTERS
 
-// Point coordinates structure
+#define REG_DECODE_MODE   0x09 //giải mã BCD cho led
+#define REG_INTENSITY     0x0A // độ sáng
+#define REG_SCAN_LIMIT    0x0B // số led được quét
+#define REG_SHUTDOWN      0x0C //bật/tắt hoạt động hiển thị
+#define REG_DISPLAY_TEST  0x0F //kiểm tra LED
+
+//tọa độ điểm 
 typedef struct
 {
     uint8_t row;
     uint8_t col;
 } Point;
 
-// Direction and tilt level lookup table
+//
 static Point dir_level[4][4] =
 {
     /* Level 0 */
@@ -58,7 +58,7 @@ static Point dir_level[4][4] =
     }
 };
 
-void max7219matrix_send(uint8_t address, uint8_t data)
+static void max7219matrix_send(uint8_t address, uint8_t data)
 {
     uint8_t buffer[2];
 
@@ -67,6 +67,7 @@ void max7219matrix_send(uint8_t address, uint8_t data)
 
     wiringPiSPIDataRW(SPI_CHANNEL, buffer, 2);
 }
+
 
 void max7219matrix_clear(void)
 {
@@ -78,22 +79,17 @@ void max7219matrix_clear(void)
     }
 }
 
-int max7219matrix_Init(void)
+
+void max7219matrix_Init(void)
 {
-    int result;
-    result = wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
-    if (result < 0)
-        return -1;
-
-    max7219matrix_send(REG_DISPLAY_TEST, 0x00); // Disable display test mode
-    max7219matrix_send(REG_DECODE_MODE, 0x00);  // Disable decode mode (for 8x8 LED matrix)
-    max7219matrix_send(REG_INTENSITY, 0x03);    // Set LED brightness
-    max7219matrix_send(REG_SCAN_LIMIT, 0x07);   // Scan all 8 rows (digits 0-7)
-    max7219matrix_send(REG_SHUTDOWN, 0x01);     // Set to normal operation mode
-
+    wiringPiSPISetup(SPI_CHANNEL, SPI_SPEED);
+    max7219matrix_send(REG_DISPLAY_TEST, 0x00); //Tắt chế độ kiểm tra LED
+    max7219matrix_send(REG_DECODE_MODE, 0x00); //Tắt Decode Mode -> vì ma trận 8x8
+    max7219matrix_send(REG_INTENSITY, 0x03); // độ sáng led
+    max7219matrix_send(REG_SCAN_LIMIT, 0x07);  // Chọn số hàng được MAX7219 quét.
+    max7219matrix_send(REG_SHUTDOWN, 0x01);  // Đưa MAX7219 vào chế độ hoạt động bình thường.
     /* Clear display */
     max7219matrix_clear();
-    return 1;
 }
 
 void max7219matrix_Display(uint8_t direction, uint8_t level)
@@ -135,13 +131,8 @@ void max7219matrix_Display(uint8_t direction, uint8_t level)
     max7219matrix_send(row + 1, col_data);
 }
 
-void max7219matrix_test(void)
-{
-    // Light up entire 8x8 matrix
-    for (uint8_t row = 1; row <= 8; row++)
-    {
-        max7219matrix_send(row, 0xFF);
-    }
-    sleep(1);
-    max7219matrix_clear(); // Turn off all LEDs
-}
+
+
+
+
+
